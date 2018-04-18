@@ -9,15 +9,15 @@ You will take a baseline installation of a Linux distribution on a virtual machi
 The application meant to be deployed is the Item catalog app, previously developed for Project 3.
 
 Useful info
-IP address: 52.34.208.247.
+IP address: 13.59.228.162.
 
 Accessible SSH port: 2200.
 
-Application URL: http://ec2-52-34-208-247.us-west-2.compute.amazonaws.com/.
+Application URL: http://ec2-13-59-228-162.us-east-2.compute.amazonaws.com/.
 
 Step by step walkthrough
 1 - Create a new user named grader and grant this user sudo permissions.
-Log into the remote VM as root user through ssh: $ ssh root@52.34.208.247.
+Log into the remote VM as root user through ssh: $ ssh root@13.59.228.162.
 Add a new user called grader: $ sudo adduser grader.
 Create a new file under the suoders directory: $ sudo nano /etc/sudoers.d/grader. Fill that newly created file with the following line of text: "grader ALL=(ALL:ALL) ALL", then save it.
 In order to prevent the "sudo: unable to resolve host" error, edit the hosts:
@@ -39,14 +39,14 @@ Copy the content of the udacity_key.pub file from your local machine to the /hom
 $ sudo chmod 700 /home/grader/.ssh.
 $ sudo chmod 644 /home/grader/.ssh/authorized_keys.
 Finally change the owner from root to grader: $ sudo chown -R grader:grader /home/grader/.ssh.
-Now you are able to log into the remote VM through ssh with the following command: $ ssh -i ~/.ssh/udacity_key.rsa grader@52.34.208.247.
+Now you are able to log into the remote VM through ssh with the following command: $ ssh -i ~/.ssh/udacity_key.rsa grader@13.59.228.162.
 5 - Enforce key-based authentication
 $ sudo nano /etc/ssh/sshd_config. Find the PasswordAuthentication line and edit it to no.
 $ sudo service ssh restart.
 6 - Change the SSH port from 22 to 2200
 $ sudo nano /etc/ssh/sshd_config. Find the Port line and edit it to 2200.
 $ sudo service ssh restart.
-Now you are able to log into the remote VM through ssh with the following command: $ ssh -i ~/.ssh/udacity_key.rsa -p 2200 grader@52.34.208.247.
+Now you are able to log into the remote VM through ssh with the following command: $ ssh -i ~/.ssh/udacity_key.rsa -p 2200 grader@13.59.228.162.
 Source: Ubuntu forums.
 
 7 - Disable ssh login for root user
@@ -88,7 +88,7 @@ Configure your email: $ git config --global user.email <email>.
 13 - Clone the Catalog app from Github
 $ cd /var/www. Then: $ sudo mkdir catalog.
 Change owner for the catalog folder: $ sudo chown -R grader:grader catalog.
-Move inside that newly created folder: $ cd /catalog and clone the catalog repository from Github: $ git clone https://github.com/iliketomatoes/catalog.git catalog.
+Move inside that newly created folder: $ cd /catalog and clone the catalog repository from Github: $ git clone https://github.com/mlyons7676/catalog.git catalog.
 Make a catalog.wsgi file to serve the application over the mod_wsgi. That file should look like this:
 import sys
 import logging
@@ -113,9 +113,9 @@ Sources: DigitalOcean, Dabapps.
 Create a virtual host conifg file: $ sudo nano /etc/apache2/sites-available/catalog.conf.
 Paste in the following lines of code:
 <VirtualHost *:80>
-    ServerName 52.34.208.247
-    ServerAlias ec2-52-34-208-247.us-west-2.compute.amazonaws.com
-    ServerAdmin admin@52.34.208.247
+    ServerName 13.59.228.162
+    ServerAlias ec2-13-59-228-162.us-west-2.compute.amazonaws.com
+    ServerAdmin admin@13.59.228.162
     WSGIDaemonProcess catalog python-path=/var/www/catalog:/var/www/catalog/venv/lib/python2.7/site-packages
     WSGIProcessGroup catalog
     WSGIScriptAlias / /var/www/catalog/catalog.wsgi
@@ -165,7 +165,7 @@ Type $ glances -h to know more about this program's options.
 Source: eHowStuff.
 
 18 - Update OAuth authorized JavaScript origins
-To let users correctly log-in change the authorized URI to http://ec2-52-34-208-247.us-west-2.compute.amazonaws.com/ on both Google and Facebook developer dashboards.
+To let users correctly log-in change the authorized URI to http://ec2-13-59-228-162.us-west-2.compute.amazonaws.com/ on both Google and Facebook developer dashboards.
 19 - Restart Apache to launch the app
 $ sudo service apache2 restart.
 Special thanks to stueken who wrote a really helpful README in his repository.
