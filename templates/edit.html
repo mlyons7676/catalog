@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+        <link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" type="image/x-icon" href="/static/cart.png">
+    <title>{{item.title}}</title>
+</head>
+
+<body>
+
+    <!--Header -->
+
+    <header>
+        <div class="header-wrap">
+            <a class="title" href="/">Item Catalog</a>
+            <div class="login">
+                {% if log_status!="login" %}
+                <a class="headerlink" href="/gdisconnect">Logout</a></div>
+                {% else %}
+                <a class="headerlink" href="/login">Login</a></div>
+                {% endif %}
+        </div>
+    </header>
+
+    <div class="content">
+    <h1>Edit - {{item.title}}</h1>
+    <form action="{{ url_for('edit_item',item_id=item.id, shop_name=shop_name)}}" method = 'POST'>
+        <h2>New Title: </h2>
+          <input id="title" type="text" name='title' value="{{item.title}}" >
+            <h2>Price:</h2>
+            $<input id="price" type="text" name='price' value={{item.price}}>
+            <h2>Discount price:</h2>
+            $<input id="discount_price" type="text" name='discount_price' value={{item.discount_price}}>
+            <h2>Shop：</h2>
+                <select name="shop">
+                    {% for i in shops %}
+                        {% if i.name == shop_name %}
+                        <option value="{{i.id}}" selected="selected">{{i.name}}</option>
+                        {% else %}
+                        <option value="{{i.id}}">{{i.name}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select><br>
+        <input class="button" type='submit' value='Edit' onclick="return checknull()">
+    </form>
+        <script>
+            function checknull() {
+                var x=document.getElementById("title").value;
+                if (x.length==0){
+                alert("Title can not be null");
+                return false;
+                }
+                else {
+                    return true
+
+                 }
+            }
+
+            function placeholder_focus() {
+                var x=document.getElementById("title")
+                if (x.length==0){
+                alert("Title can not be null");
+                return false;
+                }
+                else {
+                    return true
+
+                 }
+            }
+        </script>
+    </div>
+
+</body>
+</html>

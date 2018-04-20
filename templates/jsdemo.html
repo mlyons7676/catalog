@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+
+<form  method = 'POST' enctype="multipart/form-data" onsubmit="return check()">
+    <h2>Title:</h2>
+    <input id="title" type="text" name='title'>
+    <input id="create_bnt" class="button" type='submit' value='Create'>
+</form>
+<script>
+    function check() {
+        var x=document.getElementById("title").value;
+        if (x.length==0){
+        alert("Title can not be null");
+        return false;
+        }
+        else {
+            return true
+        }
+    }
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" type="image/x-icon" href="/static/cart.png">
+    <title>{{item.title}}</title>
+</head>
+
+<body>
+
+    <!--Header -->
+
+    <header>
+        <div class="header-wrap">
+            <a class="title" href="/">Item Catalog</a>
+            <div class="login">
+                {% if log_status!="login" %}
+                <a class="headerlink" href="/gdisconnect">Logout</a></div>
+                {% else %}
+                <a class="headerlink" href="/login">Login</a></div>
+                {% endif %}
+        </div>
+    </header>
+
+
+    <!--Edit item -->
+
+    <div class="content">
+        <h1>{{item.title}}</h1>
+        <div>
+            <a href="/shop/{{item.shop.name}}/{{item.id}}/edit">Edit</a>
+            <a href="/shop/{{item.shop.name}}/{{item.id}}/delete">Delete</a>
+        </div>
+        {% if item.brand=="" %}
+        <p class="detail">Brand: None </p>
+        {% else %}
+        <p class="detail">Brand: {{item.brand}}</p>
+        {% endif %}
+        {% if item.price=="" %}
+        <p class="detail">Price: None </p>
+        {% else %}
+        <p class="detail">Price: ${{item.price}}</p>
+        {% endif %}
+        {% if item.discount_price==None  %}
+        <p class="detail">Discount price: None </p>
+        {% else %}
+        <p class="detail">Disccout Price: ${{item.discount_price}}</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>

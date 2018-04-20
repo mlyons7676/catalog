@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" type="image/x-icon" href="/static/cart.png">
+    <title>All Items</title>
+</head>
+<body>
+
+    <!--Header -->
+
+    <header>
+        <div class="header-wrap">
+            <a class="title" href="/">Item Catalog</a>
+            <div class="login">
+                {% if log_status!="login" %}
+                <a class="headerlink" href="/gdisconnect">Logout</a></div>
+                {% else %}
+                <a class="headerlink" href="/login">Login</a></div>
+                {% endif %}
+        </div>
+    </header>
+
+
+    <!--MESSAGE FLASHING EXAMPLE -->
+
+    <div class="flash">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+
+        <ul>
+            {% for message in messages %}
+            <li><strong>{{message}}</strong></li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!--SHOP & ITEM LIST-->
+
+    <div class="content">
+
+        <div class="shop_list">
+            <h1>Shops</h1>
+            <ul>
+            {% for i in shops %}
+
+                <li>
+                    <a href="/shop/{{i.name}}">{{i.name}}</a>
+                </li>
+
+            {% endfor %}
+            </ul>
+        </div>
+
+
+        <div class="item_list">
+            <a href="/item/add">New Item</a>
+            <h1>Latest Items</h1>
+            <ul>
+            {% for i in items %}
+                <li>
+                    <a class="" href="/shop/{{i.shop.name}}/{{i.id}}">{{i.title}}</a>
+                    <span class="shop_name">({{i.shop.name}})</span>
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+
+        <div class="clear">
+        </div>
+    </div>
+
+</body>
+</html>
