@@ -1,91 +1,233 @@
-Last login: Fri Apr 20 12:59:02 on ttys000
-Martins-MBP:~ martinlyons$ cd ~/.ssh/udacity_key.rsa
--bash: cd: /Users/martinlyons/.ssh/udacity_key.rsa: Not a directory
-Martins-MBP:~ martinlyons$ ssh keygen -f ~/.ssh/udacity_key.rsa
-ssh: Could not resolve hostname keygen: nodename nor servname provided, or not known
-Martins-MBP:~ martinlyons$ ssh-keygen -f ~/.ssh/udacity_key.rsa
-Generating public/private rsa key pair.
-/Users/martinlyons/.ssh/udacity_key.rsa already exists.
-Overwrite (y/n)? n
-Martins-MBP:~ martinlyons$ cd /Users/martinlyons/.ssh/udacity_key.rsa
--bash: cd: /Users/martinlyons/.ssh/udacity_key.rsa: Not a directory
-Martins-MBP:~ martinlyons$ cd /Users/martinlyons/.ssh/
-Martins-MBP:.ssh martinlyons$ nano udacity_key.rsa
-Martins-MBP:.ssh martinlyons$ cat ~/.ssh/udacity_key.rsa.pub
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDetxCfcaUt4NjYQyZiP9U4wWbzkedpQAD8jmXjla3XWSQQeeXrsu552rQHqjkhDiiwhVBYJ8OVcXJkygwmN3HTjn6QgDLKL/tF0Pl4ykKsV7laNjfn8+nZzebagxqaxT0RFM3kUDcAryyijKMusIgbPoqi4bop7GwHHd5m/CKWZ8ogrqZxkb0+EamoFlZNHpPiZ5CVFnb7TK4AhnWWSALeZ6/Us4ouAQ4BEhp7QBL5yaTncZPNrPNtz0d7m/IkLm4z+lHDFBwTLBL4k1HpconfcJJ7Kt9UQ19qtbsiacw9FGT4zm+6YqQF3+w9hXZKqbBe5T8FI7LYuzxytCDc/ZAz martinlyons@Martins-MBP.attlocal.net
-Martins-MBP:.ssh martinlyons$ ssh -i ~/.ssh/udacity_key.rsa grader@13.58.109.116
-The authenticity of host '13.58.109.116 (13.58.109.116)' can't be established.
-ECDSA key fingerprint is SHA256:U67B/ZmwMN81tvglHOhoFfekokmARhpIR5J6tRC+ye4.
-Are you sure you want to continue connecting (yes/no)? yes
-Warning: Permanently added '13.58.109.116' (ECDSA) to the list of known hosts.
-grader@13.58.109.116: Permission denied (publickey).
-Martins-MBP:.ssh martinlyons$ ssh -i ~/.ssh/udacity_key.rsa grader@13.59.228.162 -p 2200
-Enter passphrase for key '/Users/martinlyons/.ssh/udacity_key.rsa': 
-Welcome to Ubuntu 16.04.4 LTS (GNU/Linux 4.4.0-1013-aws x86_64)
+from flask import Flask, render_template, redirect, url_for, \
+    jsonify, request, flash, make_response
+from flask import session as login_session
+from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
 
- * Documentation:  https://help.ubuntu.com
- * Management:     https://landscape.canonical.com
- * Support:        https://ubuntu.com/advantage
+from database_setup import Base, Item, Shop
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-  Get cloud support with Ubuntu Advantage Cloud Guest:
-    http://www.ubuntu.com/business/services/cloud
-
-10 packages can be updated.
-8 updates are security updates.
+import random
+import string
+import httplib2
+import json
+import requests
 
 
-*** System restart required ***
-Last login: Wed Apr 18 22:08:07 2018 from 108.220.125.195
-grader@ip-172-26-9-55:~$ sudo nano /etc/ssh/sshd_config
-[sudo] password for grader: 
+app = Flask(__name__)
 
 
+# Create session and connect to DB
+engine = create_engine('postgresql://catalog:password@localhost/catalog')
+Base.metadata.bind = engine
+DBSession = sessionmaker(bind=engine)
+session = DBSession()
 
 
+CLIENT_ID = "1072655513531-4umflv1480tut4u8vr4hfl6g1eo4it7q." \
+            "apps.googleusercontent.com"
+CLIENT_SECRET = "i7ZOvklCFV4cA8TmWRO32vm3"
 
 
+# Making the login function
+@app.route('/login')
+def showLogin():
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                    for x in list(range(32)))
+    login_session['state'] = state
+    return render_template("login.html", STATE=state)
 
 
+# Making the callback function
+@app.route('/gconnect', methods=['POST'])
+def gconnect():
+    # Validate state token
+    if request.args.get('state') != login_session['state']:
+        response = make_response(json.dumps('Invalid state parameter.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    # Obtain authorization code
+    code = request.data
+
+    try:
+        # Upgrade the authorization code into a credentials object
+        oauth_flow = flow_from_clientsecrets(CLIENT_ID = json.loads( open('/var/www/catalog/catalog/client_secrets.json', 'r').read())['web']$
+        oauth_flow.redirect_uri = 'postmessage'
+        credentials = oauth_flow.step2_exchange(code)
+    except FlowExchangeError:
+        response = make_response(
+            json.dumps('Failed to upgrade the authorization code.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+                                          
+ # Check that the access token is valid.
+    access_token = credentials.access_token
+    url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
+           % access_token)
+    h = httplib2.Http()
+    result = json.loads(h.request(url, 'GET')[1])
+    # If there was an error in the access token info, abort.
+    if result.get('error') is not None:
+        response = make_response(json.dumps(result.get('error')), 500)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+    # Verify that the access token is used for the intended user.
+    gplus_id = credentials.id_token['sub']
+    if result['user_id'] != gplus_id:
+        response = make_response(
+            json.dumps("Token's user ID doesn't match given user ID."), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+    # Verify that the access token is valid for this app.
+    if result['issued_to'] != CLIENT_ID:
+        response = make_response(
+            json.dumps("Token's client ID does not match app's."), 401)
+        print("Token's client ID does not match app's.")
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+    stored_access_token = login_session.get('access_token')
+    stored_gplus_id = login_session.get('gplus_id')
+    if stored_access_token is not None and gplus_id == stored_gplus_id:
+        response = make_response(json.dumps
+                                 ('Current user is already connected.'), 200)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+    # Store the access token in the session for later use.
+    login_session['access_token'] = credentials.access_token
+    login_session['gplus_id'] = gplus_id
+
+    # Get user info
+    userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
+    params = {'access_token': credentials.access_token, 'alt': 'json'}
+    answer = requests.get(userinfo_url, params=params)
+
+    data = answer.json()
+
+    login_session['username'] = data['name']
+    login_session['picture'] = data['picture']
+    login_session['email'] = data['email']
+
+    output = ''
+    output += '<h1>Welcome, '
+    output += login_session['username']
+    output += '!</h1>'
+    output += '<img src="'
+    output += login_session['picture']
+    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;' \
+              '-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    flash("you are now logged in as %s" % login_session['username'])
+    print("done!")
+    return output
+
+    # Making the disconnect function
+@app.route('/gdisconnect')
+def gdisconnect():
+    access_token = login_session.get('access_token')
+    if access_token is None:
+        print('Access Token is None')
+        response = make_response(json.dumps
+                                 ('Current user not connected.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    print(('In gdisconnect access token is %s') % str(access_token))
+    print('User name is: ')
+    print(login_session['username'])
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' \
+          % login_session['access_token']
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[0]
+    print('result is ')
+    print(result)
+    if result['status'] == '200':
+        del login_session['access_token']
+        del login_session['gplus_id']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        response = make_response(json.dumps('Successfully disconnected.'), 200)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    else:
+        response = make_response(json.dumps
+                                 ('Failed to revoke token for given user.',
+                                  400))
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+# Making the catalog JSON
+@app.route('/catalog/JSON')
+def catalog_json():
+    shops = session.query(Shop).all()
+    return jsonify(Shop=[i.serialize for i in shops])
 
 
+# Making the main catalog
+@app.route('/')
+@app.route('/shop')
+@app.route('/shop/')
+def all_list():
+    # login status check
+    if 'username' in login_session:
+        log_staus = "Logout"
+    else:
+        log_staus = "Login"
+    items = session.query(Item).order_by(Item.id.desc()).all()
+    shops = session.query(Shop).all()
+    return render_template('main.html', items=items, shops=shops,
+                           log_staus=log_staus)
+
+# Making the shop-item list
+@app.route('/shop/<string:shop_name>')
+def shop_items(shop_name):
+    # login status check
+    if 'username' in login_session:
+        log_staus = "Logout"
+    else:
+        log_staus = "Login"
+    shops = session.query(Shop).all()
+    shop = session.query(Shop).filter_by(name=shop_name).one()
+    items = session.query(Item).filter_by(shop_id=shop.id).all()
+    n = len(items)
+    return render_template('shop_item.html', items=items, shops=shops,
+                           shop_name=shop_name, N=n, log_staus=log_staus)
 
 
+# Making the item information
+@app.route('/shop/<string:shop_name>/<int:item_id>')
+def item_info(item_id, shop_name):
+    # login status check
+    if 'username' in login_session:
+        log_staus = "Logout"
+    else:
+        log_staus = "Login"
+    item = session.query(Item).filter_by(id=item_id).one()
+    return render_template('item_info.html', item=item, shop_name=shop_name,
+                           log_staus=log_staus)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-grader@ip-172-26-9-55:~$ sudo nano /etc/ssh/sshd_config
-grader@ip-172-26-9-55:~$ sudo a2enmod wsgi
-Module wsgi already enabled
-grader@ip-172-26-9-55:~$ sudo service apache2 start
-grader@ip-172-26-9-55:~$ sudo chown -R grader:grader catalog
-chown: cannot access 'catalog': No such file or directory
-grader@ip-172-26-9-55:~$ cd/var/www/catalog
--bash: cd/var/www/catalog: No such file or directory
-grader@ip-172-26-9-55:~$ cd /var/www/catalog
-grader@ip-172-26-9-55:/var/www/catalog$ sudo chown -R grader:grader catalog
-grader@ip-172-26-9-55:/var/www/catalog$ cd catalog
-grader@ip-172-26-9-55:/var/www/catalog/catalog$ ls
-app.wsgi  catalog.wsgi  client_secrets.json  database_setup.py  database_setup.pyc  __init__.py  item.db  lotsofitems.py  README.md  venv
-grader@ip-172-26-9-55:/var/www/catalog/catalog$ nano database_setup.py
-grader@ip-172-26-9-55:/var/www/catalog/catalog$ nano __init__.py
-
-  GNU nano 2.5.3                                  File: __init__.py                                                                           
-
+# Add new item in the shop
+@app.route("/item/add", methods=["GET", "POST"])
+def add_item():
+    # login status check
+    if 'username' in login_session:
+        log_staus = "Logout"
+    else:
+        return redirect("/login")
+    if request.method == "POST":
+        newitem = Item(title=request.form['title'],
+                       price=request.form['price'],
+                       shop_id=request.form['shop'],
+                       brand=request.form['brand'])
+        session.add(newitem)
+        session.commit()
+        flash("A new item has been created!")
+        return redirect(url_for('all_list'))
     else:
         shops = session.query(Shop).all()
         return render_template('add.html', shops=shops, log_staus=log_staus)
-
 
 # Edit item inforamtion in the shop
 @app.route('/shop/<string:shop_name>/<int:item_id>/edit',
@@ -112,7 +254,6 @@ def edit_item(item_id, shop_name):
         return render_template("edit.html", item=item, shop_name=shop_name,
                                log_staus=log_staus, shops=shops)
 
-
 # Delete item in the shop
 @app.route("/shop/<string:shop_name>/<int:item_id>/delete",
            methods=['GET', 'POST'])
@@ -136,3 +277,5 @@ if __name__ == '__main__':
     app.secret_key = "super_secret_key"
     app.debug = True
     app.run()
+
+
