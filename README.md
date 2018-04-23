@@ -46,7 +46,7 @@ $ sudo service ssh restart.
 6 - Change the SSH port from 22 to 2200
 $ sudo nano /etc/ssh/sshd_config. Find the Port line and edit it to 2200.
 $ sudo service ssh restart.
-Now you are able to log into the remote VM through ssh with the following command: $ ssh -i ~/.ssh/udacity_key.rsa -p 2200 grader@13.59.228.162.
+Now you are able to log into the remote VM through ssh with the following command: $ ssh -i ~/.ssh/udacity_key.rsa grader@13.59.228.162 -p 2200
 Source: Ubuntu forums.
 
 7 - Disable ssh login for root user
